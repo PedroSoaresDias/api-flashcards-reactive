@@ -1,6 +1,7 @@
 package com.project.reactive_flashcards.domain.document;
 
 import java.time.OffsetDateTime;
+import java.util.Objects;
 
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -9,6 +10,10 @@ import lombok.NoArgsConstructor;
 
 public record Question(String asked, @Field("asked_in") OffsetDateTime askedIn, String answered, @Field("answered_in") OffsetDateTime answeredIn,
         String expected) {
+
+    public Boolean isAnswered() {
+        return Objects.isNull(answered);
+    }
     
     public static QuestionBuilder builder() {
         return new QuestionBuilder();
