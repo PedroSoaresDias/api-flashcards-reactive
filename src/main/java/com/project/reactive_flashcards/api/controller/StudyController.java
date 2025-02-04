@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.project.reactive_flashcards.api.controller.request.AnswerQuestionRequest;
 import com.project.reactive_flashcards.api.controller.request.StudyRequest;
+import com.project.reactive_flashcards.api.controller.response.AnswerQuestionResponse;
 import com.project.reactive_flashcards.api.controller.response.QuestionResponse;
 import com.project.reactive_flashcards.api.mapper.StudyMapper;
 import com.project.reactive_flashcards.core.validation.MongoId;
@@ -39,13 +41,25 @@ public class StudyController {
     public Mono<QuestionResponse> start(@Valid @RequestBody final StudyRequest request) {
         return studyService.start(studyMapper.toDocument(request))
                 .doFirst(() -> log.info("==== Try to create a study with follow request {}", request))
-                .map(document -> studyMapper.toResponse(document.getLastQuestionPending(), document.id()));
+                .map(document -> studyMapper.toResponse(document.getLastPendingQuestion(), document.id()));
     }
-    
-    @GetMapping(produces = APPLICATION_JSON_VALUE, value = "{id}")
-    public Mono<QuestionResponse> getCurrentQuestion(@Valid @PathVariable @MongoId(message = "{studyController.id}") final String id) {
+
+    @GetMapping(produces = APPLICATION_JSON_VALUE, value = "{id}/current-question")
+    public Mono<QuestionResponse> getCurrentQuestion(
+            @Valid @PathVariable @MongoId(message = "{studyController.id}") final String id) {
         return studyQueryService.getLastPendingQuestion(id)
                 .doFirst(() -> log.info("==== Try to get a next question in study {}", id))
                 .map(question -> studyMapper.toResponse(question, id));
     }
+
+    @PostMapping(consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE, value = "{id}/answer")
+    public Mono<AnswerQuestionResponse> answer(
+            @Valid @PathVariable @MongoId(message = "{studyController.id}") final String id,
+            @Valid @RequestBody final AnswerQuestionRequest resquest) {
+        return studyService.answer(id, resquest.answer())
+                .doFirst(() -> log.info("==== Try to answer pending question in study {} with {}", id,
+                        resquest.answer()))
+                .map(document -> studyMapper.toResponse(document.getLastAnsweredQuestion()));
+    }
+
 }

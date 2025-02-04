@@ -4,6 +4,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import com.project.reactive_flashcards.api.controller.request.StudyRequest;
+import com.project.reactive_flashcards.api.controller.response.AnswerQuestionResponse;
 import com.project.reactive_flashcards.api.controller.response.QuestionResponse;
 import com.project.reactive_flashcards.domain.document.Question;
 import com.project.reactive_flashcards.domain.document.StudyDocument;
@@ -14,7 +15,6 @@ public interface StudyMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "studyDeck.deckId", source = "deckId")
     @Mapping(target = "studyDeck.cards", ignore = true)
-    @Mapping(target = "complete", ignore = true)
     @Mapping(target = "questions", ignore = true)
     @Mapping(target = "question", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
@@ -22,4 +22,6 @@ public interface StudyMapper {
     StudyDocument toDocument(final StudyRequest request);
 
     QuestionResponse toResponse(final Question question, final String id);
+
+    AnswerQuestionResponse toResponse(final Question question);
 }
